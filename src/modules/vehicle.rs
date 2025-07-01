@@ -6,7 +6,7 @@ use sdl2::video::Window;
 
 use crate::modules::ui::View;
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Debug)]
 pub enum Position {
     Top,
     Right,
@@ -14,11 +14,13 @@ pub enum Position {
     Left,
 }
 
+#[derive(PartialEq, Debug)]
 pub enum Direction {
     Right,
     Left,
 }
 
+#[derive(Debug)]
 pub struct Vehicle {
     pub x: i32,
     pub y: i32,

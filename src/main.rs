@@ -11,7 +11,7 @@ use sdl2::keyboard::Keycode;
 use sdl2::rect::Point;
 use std::time::Duration;
 
-use crate::modules::vehicle::Vehicle;
+use crate::modules::vehicle::{Position, Vehicle};
 
 fn main() {
     let sdl_context = sdl2::init().unwrap();
@@ -74,9 +74,25 @@ fn main() {
 
         draw_ui(&mut canvas, &view);
 
-        for veh in &view.vehicles {
-            veh.draw(&mut canvas);
+        // check if a car reached the end
+        view.vehicles.retain(|vehicle| match vehicle.start {
+            Position::Top => vehicle.y <= view.height as i32, // bottom reached
+            Position::Bottom => vehicle.y + vehicle.height as i32 >= 0, // top reached
+            Position::Left => vehicle.x <= view.width as i32, // Right reached
+            Position::Right => vehicle.x + vehicle.width as i32 >= 0, // Left reached
+        });
+
+        for vehicle in &mut view.vehicles {
+            match vehicle.start {
+                Position::Top => vehicle.y += 1,
+                Position::Right => vehicle.x -= 1,
+                Position::Left => vehicle.x += 1,
+                Position::Bottom => vehicle.y -= 1,
+            }
+            vehicle.draw(&mut canvas);
         }
+
+        // dbg!(&view.vehicles.len());
 
         canvas.present();
         ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
