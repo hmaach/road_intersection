@@ -2,6 +2,7 @@ extern crate sdl2;
 
 mod modules {
     pub mod ui;
+    pub mod vehicle;
 }
 
 use modules::ui::*;
@@ -9,6 +10,8 @@ use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::rect::Point;
 use std::time::Duration;
+
+use crate::modules::vehicle::Vehicle;
 
 fn main() {
     let sdl_context = sdl2::init().unwrap();
@@ -34,6 +37,7 @@ fn main() {
     let light_height = 35;
 
     let mut view = View {
+        vehicles: Vec::new(),
         green_light: GreenLight::None,
         width,
         height,
@@ -43,6 +47,18 @@ fn main() {
         light_width,
         light_height,
     };
+
+    view.vehicles
+        .push(Vehicle::new(&view, modules::vehicle::Position::Right));
+
+    view.vehicles
+        .push(Vehicle::new(&view, modules::vehicle::Position::Top));
+
+    view.vehicles
+        .push(Vehicle::new(&view, modules::vehicle::Position::Bottom));
+
+    view.vehicles
+        .push(Vehicle::new(&view, modules::vehicle::Position::Left));
 
     'running: loop {
         for event in event_pump.poll_iter() {
@@ -56,7 +72,11 @@ fn main() {
             }
         }
 
-        draw_background(&mut canvas, &view);
+        draw_ui(&mut canvas, &view);
+
+        for veh in &view.vehicles {
+            veh.draw(&mut canvas);
+        }
 
         canvas.present();
         ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));

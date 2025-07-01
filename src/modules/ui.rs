@@ -3,6 +3,8 @@ use sdl2::rect::{Point, Rect};
 use sdl2::render::Canvas;
 use sdl2::video::Window;
 
+use crate::modules::vehicle::Vehicle;
+
 #[derive(PartialEq)]
 pub enum GreenLight {
     TopLeft,
@@ -13,6 +15,7 @@ pub enum GreenLight {
 }
 
 pub struct View {
+    pub vehicles: Vec<Vehicle>,
     pub green_light: GreenLight,
     pub width: u32,
     pub height: u32,
@@ -23,7 +26,7 @@ pub struct View {
     pub lights_margin: i32,
 }
 
-pub fn draw_background(canvas: &mut Canvas<Window>, view: &View) {
+pub fn draw_ui(canvas: &mut Canvas<Window>, view: &View) {
     // Clear background
     canvas.set_draw_color(Color::RGB(0, 0, 0));
     canvas.clear();
