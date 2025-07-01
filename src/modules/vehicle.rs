@@ -16,6 +16,7 @@ pub enum Position {
 
 #[derive(PartialEq, Debug)]
 pub enum Direction {
+    Straight,
     Right,
     Left,
 }
@@ -60,15 +61,16 @@ impl Vehicle {
             }
         };
 
-        let direction = if rand::thread_rng().gen_bool(0.5) {
-            Direction::Right
-        } else {
-            Direction::Left
+        let direction = match rand::thread_rng().gen_range(0..=2) {
+            0 => Direction::Left,
+            1 => Direction::Straight,
+            _ => Direction::Right,
         };
 
         let color = match direction {
-            Direction::Right => Color::RGB(0, 0, 255),
-            Direction::Left => Color::RGB(255, 255, 0),
+            Direction::Straight => Color::RGB(255, 165, 0),
+            Direction::Right => Color::GREEN,
+            Direction::Left => Color::MAGENTA,
         };
 
         Self {

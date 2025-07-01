@@ -48,26 +48,33 @@ fn main() {
         light_height,
     };
 
-    view.vehicles
-        .push(Vehicle::new(&view, modules::vehicle::Position::Right));
-
-    view.vehicles
-        .push(Vehicle::new(&view, modules::vehicle::Position::Top));
-
-    view.vehicles
-        .push(Vehicle::new(&view, modules::vehicle::Position::Bottom));
-
-    view.vehicles
-        .push(Vehicle::new(&view, modules::vehicle::Position::Left));
-
     'running: loop {
         for event in event_pump.poll_iter() {
             match event {
-                Event::Quit { .. }
-                | Event::KeyDown {
-                    keycode: Some(Keycode::Escape),
-                    ..
-                } => break 'running,
+                Event::KeyDown {
+                    keycode: Some(key), ..
+                } => match key {
+                    Keycode::Escape => break 'running,
+
+                    Keycode::Up if view.vehicles.len() < 8 => {
+                        view.vehicles.push(Vehicle::new(&view, Position::Bottom))
+                    }
+
+                    Keycode::Right if view.vehicles.len() < 8 => {
+                        view.vehicles.push(Vehicle::new(&view, Position::Left))
+                    }
+
+                    Keycode::Down if view.vehicles.len() < 8 => {
+                        view.vehicles.push(Vehicle::new(&view, Position::Top))
+                    }
+
+                    Keycode::Left if view.vehicles.len() < 8 => {
+                        view.vehicles.push(Vehicle::new(&view, Position::Right))
+                    }
+
+                    _ => (),
+                },
+
                 _ => {}
             }
         }
