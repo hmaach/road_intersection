@@ -2,6 +2,8 @@
 
 This is a small simulation of a road intersection I made using Rust and SDL2.
 
+<img src="./image.png" alt="Image" style="border-radius: 10px; overflow: hidden;">
+
 ## Features
 
 - Cars come from four directions: Top, Bottom, Left, Right.
