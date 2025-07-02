@@ -100,32 +100,54 @@ impl Vehicle {
     }
 
     pub fn can_move(&self, view: &View) -> bool {
-        let car_rect = Rect::new(self.x, self.y, self.width, self.height);
-        let margin = 13;
 
-        for (my_light, rect) in &view.stop_lines {
-            if *my_light == view.green_light {
+        let next_rect = match self.start {
+            Position::Top => Rect::new(self.x, self.y + 1, self.width, self.height),
+            Position::Right => Rect::new(self.x - 1, self.y, self.width, self.height),
+            Position::Bottom => Rect::new(self.x, self.y - 1, self.width, self.height),
+            Position::Left => Rect::new(self.x + 1, self.y, self.width, self.height),
+        };
+
+        // Check traffic light stop lines
+        for (light_type, stop_line_rect) in &view.stop_lines {
+            if *light_type == view.green_light {
                 continue;
             }
-            if rect.has_intersection(car_rect) {
+
+            if stop_line_rect.has_intersection(next_rect) {
                 return false;
             }
         }
 
         for other in &view.vehicles {
-            if other.x == self.x && other.y == self.y {
-                continue; // skip self
+            if self.x == other.x && self.y == other.y {
+                continue;
             }
 
-            // Expand the other car's rectangle with margin
-            let other_rect_with_margin = Rect::new(
-                other.x - margin,
-                other.y - margin,
-                other.width + margin as u32 * 2,
-                other.height + margin as u32 * 2,
-            );
+            let other_rect = Rect::new(other.x, other.y, other.width, other.height);
 
-            if other_rect_with_margin.has_intersection(car_rect) {
+            if next_rect.has_intersection(other_rect) {
+                return false;
+            }
+
+            let safety_distance = 30; // Adjust this value to control spacing
+
+            let too_close = match self.start {
+                Position::Top => {
+                    other.x == self.x && other.y > self.y && (other.y - self.y) < safety_distance
+                }
+                Position::Right => {
+                    other.y == self.y && other.x < self.x && (self.x - other.x) < safety_distance
+                }
+                Position::Bottom => {
+                    other.x == self.x && other.y < self.y && (self.y - other.y) < safety_distance
+                }
+                Position::Left => {
+                    other.y == self.y && other.x > self.x && (other.x - self.x) < safety_distance
+                }
+            };
+
+            if too_close {
                 return false;
             }
         }

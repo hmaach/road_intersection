@@ -11,7 +11,6 @@ pub enum GreenLight {
     TopRight,
     BottomRight,
     BottomLeft,
-    None,
 }
 
 pub fn draw_lights(canvas: &mut Canvas<Window>, view: &View) {

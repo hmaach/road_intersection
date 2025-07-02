@@ -11,7 +11,6 @@ use sdl2::keyboard::Keycode;
 use sdl2::{event::Event, pixels::Color};
 use std::time::Duration;
 
-use crate::modules::lights::GreenLight;
 use crate::modules::vehicle::{Position, Vehicle};
 
 fn main() {
@@ -38,24 +37,24 @@ fn main() {
                 } => match key {
                     Keycode::Escape => break 'running,
 
-                    Keycode::Up if view.vehicles.len() < 8 && view.cool_downs.bottom == 0 => {
+                    Keycode::Up if view.cool_downs.bottom == 0 => {
                         view.vehicles.push(Vehicle::new(&view, Position::Bottom));
-                        view.cool_downs.bottom = 60; // 1 second at 60 FPS
+                        view.cool_downs.bottom = 90; // 1.5 second at 90 FPS
                     }
 
-                    Keycode::Right if view.vehicles.len() < 8 && view.cool_downs.left == 0 => {
+                    Keycode::Right if view.cool_downs.left == 0 => {
                         view.vehicles.push(Vehicle::new(&view, Position::Left));
-                        view.cool_downs.left = 60;
+                        view.cool_downs.left = 90;
                     }
 
-                    Keycode::Down if view.vehicles.len() < 8 && view.cool_downs.top == 0 => {
+                    Keycode::Down if view.cool_downs.top == 0 => {
                         view.vehicles.push(Vehicle::new(&view, Position::Top));
-                        view.cool_downs.top = 60;
+                        view.cool_downs.top = 90;
                     }
 
-                    Keycode::Left if view.vehicles.len() < 8 && view.cool_downs.right == 0 => {
+                    Keycode::Left if view.cool_downs.right == 0 => {
                         view.vehicles.push(Vehicle::new(&view, Position::Right));
-                        view.cool_downs.right = 60;
+                        view.cool_downs.right = 90;
                     }
 
                     _ => (),
@@ -67,7 +66,7 @@ fn main() {
 
         view.draw(&mut canvas);
 
-        // for debuging
+        // for debugging
         for (_, r) in &view.decision_areas {
             canvas.set_draw_color(Color::RGB(66, 0, 0));
             canvas.fill_rect(*r).unwrap();
@@ -77,8 +76,6 @@ fn main() {
         //     canvas.draw_rect(*rect).unwrap();
         // }
 
-        // Change light every 150 frames
-        // Only change the light if no vehicle is in a decision area
         let mut vehicle_in_decision_area = false;
 
         for vehicle in &view.vehicles {
@@ -93,23 +90,7 @@ fn main() {
             }
         }
 
-        if !vehicle_in_decision_area {
-            view.light_timer += 1;
-
-            if view.light_timer >= 100 {
-                view.light_timer = 0;
-                view.green_light = match view.green_light {
-                    GreenLight::TopLeft => GreenLight::TopRight,
-                    GreenLight::TopRight => GreenLight::BottomRight,
-                    GreenLight::BottomRight => GreenLight::BottomLeft,
-                    GreenLight::BottomLeft => GreenLight::TopLeft,
-                    GreenLight::None => GreenLight::None,
-                };
-            }
-        } else {
-            // Reset timer if a vehicle is in a decision area
-            view.light_timer = 0;
-        }
+        view.update_light_timing(vehicle_in_decision_area);
 
         // increment cooldown for each direction
         if view.cool_downs.top > 0 {
@@ -163,8 +144,6 @@ fn main() {
 
             vehicle.draw(&mut canvas);
         }
-
-        // dbg!(&view.vehicles.len());
 
         canvas.present();
         ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));

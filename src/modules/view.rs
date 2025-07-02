@@ -20,6 +20,7 @@ pub struct View {
     pub lights_margin: i32,
     pub cool_downs: CoolDown,
     pub light_timer: usize,
+    pub minimum_light_time_passed: bool,
     pub decision_areas: [(DecisionAreas, Rect); 4],
     pub stop_lines: [(GreenLight, Rect); 4],
 }
@@ -52,6 +53,7 @@ impl View {
                 left: 0,
             },
             light_timer: 0,
+            minimum_light_time_passed: false,
             width,
             height,
             center,
@@ -91,7 +93,8 @@ impl View {
             .draw_line(Point::new(cx - r, 0), Point::new(cx - r, h))
             .unwrap();
         canvas
-            .draw_line(Point::new(cx + r, 0), Point::new(cx + r, h))
+            .draw_line(Point::new(cx + r,     // Add a method to handle light timing logic
+0), Point::new(cx + r, h))
             .unwrap();
 
         // Horizontal lines
@@ -182,14 +185,41 @@ impl View {
             }
         })
     }
+
+    pub fn update_light_timing(&mut self, vehicle_in_decision_area: bool) {
+        const MINIMUM_LIGHT_TIME: usize = 150;
+
+        self.light_timer += 1;
+
+        if self.light_timer >= MINIMUM_LIGHT_TIME {
+            self.minimum_light_time_passed = true;
+        }
+
+        if self.minimum_light_time_passed && !vehicle_in_decision_area {
+            self.change_light();
+        }
+    }
+
+    fn change_light(&mut self) {
+        self.green_light = match self.green_light {
+            GreenLight::TopLeft => GreenLight::TopRight,
+            GreenLight::TopRight => GreenLight::BottomRight,
+            GreenLight::BottomRight => GreenLight::BottomLeft,
+            GreenLight::BottomLeft => GreenLight::TopLeft,
+        };
+
+        // Reset for next cycle
+        self.light_timer = 0;
+        self.minimum_light_time_passed = false;
+    }
 }
 
 pub fn decision_area_to_light(area: &DecisionAreas) -> GreenLight {
     match area {
         DecisionAreas::TopLeft => GreenLight::TopRight,
         DecisionAreas::TopRight => GreenLight::BottomRight,
-        DecisionAreas::BottomRight => GreenLight::BottomLeft, 
-        DecisionAreas::BottomLeft => GreenLight::TopLeft, 
+        DecisionAreas::BottomRight => GreenLight::BottomLeft,
+        DecisionAreas::BottomLeft => GreenLight::TopLeft,
     }
 }
 
