@@ -1,6 +1,7 @@
 extern crate sdl2;
 
 mod modules {
+    pub mod lights;
     pub mod ui;
     pub mod vehicle;
 }
@@ -11,7 +12,10 @@ use sdl2::keyboard::Keycode;
 use sdl2::rect::Point;
 use std::time::Duration;
 
-use crate::modules::vehicle::{Position, Vehicle};
+use crate::modules::{
+    lights::GreenLight,
+    vehicle::{CoolDown, Position, Vehicle},
+};
 
 fn main() {
     let sdl_context = sdl2::init().unwrap();
@@ -39,6 +43,12 @@ fn main() {
     let mut view = View {
         vehicles: Vec::new(),
         green_light: GreenLight::None,
+        cool_downs: CoolDown {
+            top: 0,
+            right: 0,
+            bottom: 0,
+            left: 0,
+        },
         width,
         height,
         center,
@@ -56,20 +66,24 @@ fn main() {
                 } => match key {
                     Keycode::Escape => break 'running,
 
-                    Keycode::Up if view.vehicles.len() < 8 => {
-                        view.vehicles.push(Vehicle::new(&view, Position::Bottom))
+                    Keycode::Up if view.vehicles.len() < 8 && view.cool_downs.bottom == 0 => {
+                        view.vehicles.push(Vehicle::new(&view, Position::Bottom));
+                        view.cool_downs.bottom = 60; // 1 second at 60 FPS
                     }
 
-                    Keycode::Right if view.vehicles.len() < 8 => {
-                        view.vehicles.push(Vehicle::new(&view, Position::Left))
+                    Keycode::Right if view.vehicles.len() < 8 && view.cool_downs.left == 0 => {
+                        view.vehicles.push(Vehicle::new(&view, Position::Left));
+                        view.cool_downs.left = 60;
                     }
 
-                    Keycode::Down if view.vehicles.len() < 8 => {
-                        view.vehicles.push(Vehicle::new(&view, Position::Top))
+                    Keycode::Down if view.vehicles.len() < 8 && view.cool_downs.top == 0 => {
+                        view.vehicles.push(Vehicle::new(&view, Position::Top));
+                        view.cool_downs.top = 60;
                     }
 
-                    Keycode::Left if view.vehicles.len() < 8 => {
-                        view.vehicles.push(Vehicle::new(&view, Position::Right))
+                    Keycode::Left if view.vehicles.len() < 8 && view.cool_downs.right == 0 => {
+                        view.vehicles.push(Vehicle::new(&view, Position::Right));
+                        view.cool_downs.right = 60;
                     }
 
                     _ => (),
@@ -79,7 +93,20 @@ fn main() {
             }
         }
 
-        draw_ui(&mut canvas, &view);
+        view.draw(&mut canvas);
+
+        if view.cool_downs.top > 0 {
+            view.cool_downs.top -= 1;
+        }
+        if view.cool_downs.right > 0 {
+            view.cool_downs.right -= 1;
+        }
+        if view.cool_downs.bottom > 0 {
+            view.cool_downs.bottom -= 1;
+        }
+        if view.cool_downs.left > 0 {
+            view.cool_downs.left -= 1;
+        }
 
         // check if a car reached the end
         view.vehicles.retain(|vehicle| match vehicle.start {

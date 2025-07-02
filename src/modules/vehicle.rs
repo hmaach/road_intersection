@@ -32,6 +32,13 @@ pub struct Vehicle {
     pub direction: Direction,
 }
 
+pub struct CoolDown {
+    pub top: u32,
+    pub right: u32,
+    pub bottom: u32,
+    pub left: u32,
+}
+
 impl Vehicle {
     pub fn new(view: &View, start: Position) -> Self {
         let mut width: i32 = 15;
