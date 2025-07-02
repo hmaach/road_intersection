@@ -19,6 +19,7 @@ pub struct View {
     pub light_height: i32,
     pub lights_margin: i32,
     pub cool_downs: CoolDown,
+    pub light_timer: usize,
     pub decision_areas: [(DecisionAreas, Rect); 4],
     pub stop_lines: [(GreenLight, Rect); 4],
 }
@@ -50,6 +51,7 @@ impl View {
                 bottom: 0,
                 left: 0,
             },
+            light_timer: 0,
             width,
             height,
             center,
@@ -148,7 +150,7 @@ impl View {
                 let height = rect.height() as i32;
                 (
                     decision_area_to_light(&area),
-                    Rect::new(x - 10, y, 20, height as u32), 
+                    Rect::new(x - 10, y, 20, height as u32),
                 )
             }
             DecisionAreas::TopRight => {
@@ -157,7 +159,7 @@ impl View {
                 let width = rect.width() as i32;
                 (
                     decision_area_to_light(&area),
-                    Rect::new(x, y - 10, width as u32, 20), 
+                    Rect::new(x, y - 10, width as u32, 20),
                 )
             }
             DecisionAreas::BottomRight => {
@@ -184,10 +186,10 @@ impl View {
 
 pub fn decision_area_to_light(area: &DecisionAreas) -> GreenLight {
     match area {
-        DecisionAreas::TopLeft => GreenLight::TopRight, ///
-        DecisionAreas::TopRight => GreenLight::BottomRight,///
-        DecisionAreas::BottomRight => GreenLight::BottomLeft,//
-        DecisionAreas::BottomLeft => GreenLight::TopLeft,//
+        DecisionAreas::TopLeft => GreenLight::TopRight,
+        DecisionAreas::TopRight => GreenLight::BottomRight,
+        DecisionAreas::BottomRight => GreenLight::BottomLeft, 
+        DecisionAreas::BottomLeft => GreenLight::TopLeft, 
     }
 }
 

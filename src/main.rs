@@ -11,6 +11,7 @@ use sdl2::keyboard::Keycode;
 use sdl2::{event::Event, pixels::Color};
 use std::time::Duration;
 
+use crate::modules::lights::GreenLight;
 use crate::modules::vehicle::{Position, Vehicle};
 
 fn main() {
@@ -39,22 +40,22 @@ fn main() {
 
                     Keycode::Up if view.vehicles.len() < 8 && view.cool_downs.bottom == 0 => {
                         view.vehicles.push(Vehicle::new(&view, Position::Bottom));
-                        view.cool_downs.bottom = 10; // 1 second at 10 FPS
+                        view.cool_downs.bottom = 60; // 1 second at 60 FPS
                     }
 
                     Keycode::Right if view.vehicles.len() < 8 && view.cool_downs.left == 0 => {
                         view.vehicles.push(Vehicle::new(&view, Position::Left));
-                        view.cool_downs.left = 10;
+                        view.cool_downs.left = 60;
                     }
 
                     Keycode::Down if view.vehicles.len() < 8 && view.cool_downs.top == 0 => {
                         view.vehicles.push(Vehicle::new(&view, Position::Top));
-                        view.cool_downs.top = 10;
+                        view.cool_downs.top = 60;
                     }
 
                     Keycode::Left if view.vehicles.len() < 8 && view.cool_downs.right == 0 => {
                         view.vehicles.push(Vehicle::new(&view, Position::Right));
-                        view.cool_downs.right = 10;
+                        view.cool_downs.right = 60;
                     }
 
                     _ => (),
@@ -66,7 +67,7 @@ fn main() {
 
         view.draw(&mut canvas);
 
-        // for debugin
+        // for debuging
         for (_, r) in &view.decision_areas {
             canvas.set_draw_color(Color::RGB(66, 0, 0));
             canvas.fill_rect(*r).unwrap();
@@ -76,6 +77,41 @@ fn main() {
         //     canvas.draw_rect(*rect).unwrap();
         // }
 
+        // Change light every 150 frames
+        // Only change the light if no vehicle is in a decision area
+        let mut vehicle_in_decision_area = false;
+
+        for vehicle in &view.vehicles {
+            for (_, area) in &view.decision_areas {
+                if vehicle.is_in_area2(area) {
+                    vehicle_in_decision_area = true;
+                    break;
+                }
+            }
+            if vehicle_in_decision_area {
+                break;
+            }
+        }
+
+        if !vehicle_in_decision_area {
+            view.light_timer += 1;
+
+            if view.light_timer >= 100 {
+                view.light_timer = 0;
+                view.green_light = match view.green_light {
+                    GreenLight::TopLeft => GreenLight::TopRight,
+                    GreenLight::TopRight => GreenLight::BottomRight,
+                    GreenLight::BottomRight => GreenLight::BottomLeft,
+                    GreenLight::BottomLeft => GreenLight::TopLeft,
+                    GreenLight::None => GreenLight::None,
+                };
+            }
+        } else {
+            // Reset timer if a vehicle is in a decision area
+            view.light_timer = 0;
+        }
+
+        // increment cooldown for each direction
         if view.cool_downs.top > 0 {
             view.cool_downs.top -= 1;
         }
@@ -105,22 +141,22 @@ fn main() {
             match vehicle.start {
                 Position::Top => {
                     if vehicle.can_move(&cloned_view.clone()) {
-                        vehicle.y += 6
+                        vehicle.y += 1
                     }
                 }
                 Position::Right => {
                     if vehicle.can_move(&cloned_view) {
-                        vehicle.x -= 6
+                        vehicle.x -= 1
                     }
                 }
                 Position::Left => {
                     if vehicle.can_move(&cloned_view) {
-                        vehicle.x += 6
+                        vehicle.x += 1
                     }
                 }
                 Position::Bottom => {
                     if vehicle.can_move(&cloned_view) {
-                        vehicle.y -= 6
+                        vehicle.y -= 1
                     }
                 }
             }

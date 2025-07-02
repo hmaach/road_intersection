@@ -4,10 +4,7 @@ use sdl2::rect::Rect;
 use sdl2::render::Canvas;
 use sdl2::video::Window;
 
-use crate::modules::{
-    lights::GreenLight,
-    view::{View, decision_area_to_light},
-};
+use crate::modules::view::View;
 
 #[derive(PartialEq, Debug, Clone)]
 pub enum Position {
@@ -146,5 +143,11 @@ impl Vehicle {
         let small_area = Rect::new(area_center_x, area_center_y, 3, 3);
 
         small_area.has_intersection(small_car)
+    }
+
+    pub fn is_in_area2(&self, area: &Rect) -> bool {
+        let car = Rect::new(self.x, self.y, self.width, self.height);
+
+        area.has_intersection(car)
     }
 }
