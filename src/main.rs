@@ -5,6 +5,7 @@ mod modules {
     pub mod vehicle;
     pub mod view;
 }
+use rand::Rng;
 
 use modules::view::*;
 use sdl2::keyboard::Keycode;
@@ -55,6 +56,39 @@ fn main() {
                     Keycode::Left if view.cool_downs.right == 0 => {
                         view.vehicles.push(Vehicle::new(&view, Position::Right));
                         view.cool_downs.right = 90;
+                    }
+
+                    Keycode::R => {
+                        let position = match rand::thread_rng().gen_range(0..=3) {
+                            0 => Position::Bottom,
+                            1 => Position::Top,
+                            2 => Position::Left,
+                            _ => Position::Right,
+                        };
+
+                        let can_spawn = match position {
+                            Position::Top if view.cool_downs.top == 0 => {
+                                view.cool_downs.top = 90;
+                                true
+                            }
+                            Position::Right if view.cool_downs.right == 0 => {
+                                view.cool_downs.right = 90;
+                                true
+                            }
+                            Position::Bottom if view.cool_downs.bottom == 0 => {
+                                view.cool_downs.bottom = 90;
+                                true
+                            }
+                            Position::Left if view.cool_downs.left == 0 => {
+                                view.cool_downs.left = 90;
+                                true
+                            }
+                            _ => false,
+                        };
+
+                        if can_spawn {
+                            view.vehicles.push(Vehicle::new(&view, position));
+                        }
                     }
 
                     _ => (),
