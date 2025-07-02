@@ -7,6 +7,7 @@ use sdl2::video::Window;
 use crate::modules::lights::*;
 use crate::modules::vehicle::*;
 
+#[derive(Clone)]
 pub struct View {
     pub vehicles: Vec<Vehicle>,
     pub green_light: GreenLight,
@@ -19,6 +20,7 @@ pub struct View {
     pub lights_margin: i32,
     pub cool_downs: CoolDown,
     pub decision_areas: [(DecisionAreas, Rect); 4],
+    pub stop_lines: [(GreenLight, Rect); 4],
 }
 
 #[derive(Clone)]
@@ -35,11 +37,13 @@ impl View {
         let center = Point::new((width / 2) as i32, (height / 2) as i32);
         let road_size = 40;
         let (lights_margin, light_width, light_height) = (5, 22, 35);
-        let decision_areas: [(DecisionAreas, Rect); 4] = Self::decision_areas(&center, &road_size);
+        let decision_areas: [(DecisionAreas, Rect); 4] =
+            Self::get_decision_areas(&center, &road_size);
+        let stop_lines: [(GreenLight, Rect); 4] = Self::get_stop_lines(&decision_areas);
 
         Self {
             vehicles: Vec::new(),
-            green_light: GreenLight::None,
+            green_light: GreenLight::BottomLeft,
             cool_downs: CoolDown {
                 top: 0,
                 right: 0,
@@ -54,6 +58,7 @@ impl View {
             light_width,
             light_height,
             decision_areas,
+            stop_lines,
         }
     }
 
@@ -99,7 +104,7 @@ impl View {
             .unwrap();
     }
 
-    fn decision_areas(center: &Point, road_size: &u32) -> [(DecisionAreas, Rect); 4] {
+    fn get_decision_areas(center: &Point, road_size: &u32) -> [(DecisionAreas, Rect); 4] {
         [
             (
                 DecisionAreas::TopLeft,
@@ -133,6 +138,56 @@ impl View {
                 Rect::new(center.x, center.y, *road_size, *road_size),
             ),
         ]
+    }
+
+    fn get_stop_lines(decision_areas: &[(DecisionAreas, Rect); 4]) -> [(GreenLight, Rect); 4] {
+        decision_areas.clone().map(|(area, rect)| match area {
+            DecisionAreas::TopLeft => {
+                let x = rect.x() + rect.width() as i32 * 2 + 5;
+                let y = rect.y();
+                let height = rect.height() as i32;
+                (
+                    decision_area_to_light(&area),
+                    Rect::new(x - 10, y, 20, height as u32), 
+                )
+            }
+            DecisionAreas::TopRight => {
+                let y = rect.y() + rect.width() as i32 * 2 + 5;
+                let x = rect.x();
+                let width = rect.width() as i32;
+                (
+                    decision_area_to_light(&area),
+                    Rect::new(x, y - 10, width as u32, 20), 
+                )
+            }
+            DecisionAreas::BottomRight => {
+                let x = rect.x() - rect.width() as i32 - 5;
+                let y = rect.y();
+                let height = rect.height() as i32;
+                (
+                    decision_area_to_light(&area),
+                    Rect::new(x - 10, y, 20, height as u32),
+                )
+            }
+            DecisionAreas::BottomLeft => {
+                let y = rect.y() - rect.width() as i32 - 5;
+                let x = rect.x();
+                let width = rect.width() as i32;
+                (
+                    decision_area_to_light(&area),
+                    Rect::new(x, y - 10, width as u32, 20),
+                )
+            }
+        })
+    }
+}
+
+pub fn decision_area_to_light(area: &DecisionAreas) -> GreenLight {
+    match area {
+        DecisionAreas::TopLeft => GreenLight::TopRight, ///
+        DecisionAreas::TopRight => GreenLight::BottomRight,///
+        DecisionAreas::BottomRight => GreenLight::BottomLeft,//
+        DecisionAreas::BottomLeft => GreenLight::TopLeft,//
     }
 }
 

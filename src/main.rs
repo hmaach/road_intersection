@@ -71,6 +71,10 @@ fn main() {
             canvas.set_draw_color(Color::RGB(66, 0, 0));
             canvas.fill_rect(*r).unwrap();
         }
+        // for (_, rect) in &view.stop_lines {
+        //     canvas.set_draw_color(Color::RGB(25, 155, 55));
+        //     canvas.draw_rect(*rect).unwrap();
+        // }
 
         if view.cool_downs.top > 0 {
             view.cool_downs.top -= 1;
@@ -93,16 +97,32 @@ fn main() {
             Position::Right => vehicle.x + vehicle.width as i32 >= 0, // Left reached
         });
 
-        let decision_areas: [(DecisionAreas, sdl2::rect::Rect); 4] = view.decision_areas.clone();
+        let cloned_view = view.clone();
 
         for vehicle in &mut view.vehicles {
-            decide_direction(vehicle, &decision_areas);
+            decide_direction(vehicle, &cloned_view.decision_areas);
 
             match vehicle.start {
-                Position::Top => vehicle.y += 4,
-                Position::Right => vehicle.x -= 4,
-                Position::Left => vehicle.x += 4,
-                Position::Bottom => vehicle.y -= 4,
+                Position::Top => {
+                    if vehicle.can_move(&cloned_view.clone()) {
+                        vehicle.y += 6
+                    }
+                }
+                Position::Right => {
+                    if vehicle.can_move(&cloned_view) {
+                        vehicle.x -= 6
+                    }
+                }
+                Position::Left => {
+                    if vehicle.can_move(&cloned_view) {
+                        vehicle.x += 6
+                    }
+                }
+                Position::Bottom => {
+                    if vehicle.can_move(&cloned_view) {
+                        vehicle.y -= 6
+                    }
+                }
             }
 
             vehicle.draw(&mut canvas);

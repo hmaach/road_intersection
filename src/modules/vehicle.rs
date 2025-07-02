@@ -4,7 +4,10 @@ use sdl2::rect::Rect;
 use sdl2::render::Canvas;
 use sdl2::video::Window;
 
-use crate::modules::view::View;
+use crate::modules::{
+    lights::GreenLight,
+    view::{View, decision_area_to_light},
+};
 
 #[derive(PartialEq, Debug, Clone)]
 pub enum Position {
@@ -21,7 +24,7 @@ pub enum Direction {
     Left,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Vehicle {
     pub x: i32,
     pub y: i32,
@@ -33,6 +36,7 @@ pub struct Vehicle {
     pub direction: Direction,
 }
 
+#[derive(Debug, Clone)]
 pub struct CoolDown {
     pub top: u32,
     pub right: u32,
@@ -75,7 +79,7 @@ impl Vehicle {
 
         let color = match direction {
             Direction::Straight => Color::RGB(255, 165, 0),
-            Direction::Right => Color::GREEN,
+            Direction::Right => Color::CYAN,
             Direction::Left => Color::MAGENTA,
         };
 
@@ -96,6 +100,22 @@ impl Vehicle {
         canvas
             .fill_rect(Rect::new(self.x, self.y, self.width, self.height))
             .unwrap();
+    }
+
+    pub fn can_move(&self, view: &View) -> bool {
+        let car_rect = Rect::new(self.x, self.y, self.width, self.height);
+
+        for (my_light, rect) in &view.stop_lines {
+            if *my_light == view.green_light {
+                // dbg!(&view.green_light);
+                continue;
+            }
+            if rect.has_intersection(car_rect) {
+                return false;
+            }
+        }
+
+        true
     }
 
     pub fn is_in_area(&self, area: &Rect) -> bool {

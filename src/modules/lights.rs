@@ -5,7 +5,7 @@ use sdl2::video::Window;
 
 use crate::modules::view::*;
 
-#[derive(PartialEq)]
+#[derive(Eq, PartialEq, Clone, Debug)]
 pub enum GreenLight {
     TopLeft,
     TopRight,
