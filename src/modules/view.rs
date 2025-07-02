@@ -187,7 +187,7 @@ impl View {
     }
 
     pub fn update_light_timing(&mut self, vehicle_in_decision_area: bool) {
-        const MINIMUM_LIGHT_TIME: usize = 150;
+        const MINIMUM_LIGHT_TIME: usize = 100;
 
         self.light_timer += 1;
 
