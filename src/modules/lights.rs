@@ -3,7 +3,7 @@ use sdl2::rect::Rect;
 use sdl2::render::Canvas;
 use sdl2::video::Window;
 
-use crate::modules::ui::*;
+use crate::modules::view::*;
 
 #[derive(PartialEq)]
 pub enum GreenLight {
@@ -15,12 +15,13 @@ pub enum GreenLight {
 }
 
 pub fn draw_lights(canvas: &mut Canvas<Window>, view: &View) {
+    let road_size = view.road_size as i32;
     let lights = [
         (
             GreenLight::TopLeft,
             Rect::new(
-                view.center.x - view.road_size - view.light_width - view.lights_margin,
-                view.center.y - view.road_size - view.light_height - view.lights_margin,
+                view.center.x - road_size - view.light_width - view.lights_margin,
+                view.center.y - road_size - view.light_height - view.lights_margin,
                 view.light_width as u32,
                 view.light_height as u32,
             ),
@@ -28,8 +29,8 @@ pub fn draw_lights(canvas: &mut Canvas<Window>, view: &View) {
         (
             GreenLight::TopRight,
             Rect::new(
-                view.center.x + view.road_size + view.lights_margin,
-                view.center.y - view.road_size - view.light_height - view.lights_margin,
+                view.center.x + road_size + view.lights_margin,
+                view.center.y - road_size - view.light_height - view.lights_margin,
                 view.light_width as u32,
                 view.light_height as u32,
             ),
@@ -37,8 +38,8 @@ pub fn draw_lights(canvas: &mut Canvas<Window>, view: &View) {
         (
             GreenLight::BottomRight,
             Rect::new(
-                view.center.x + view.road_size + view.lights_margin,
-                view.center.y + view.road_size + view.lights_margin,
+                view.center.x + road_size + view.lights_margin,
+                view.center.y + road_size + view.lights_margin,
                 view.light_width as u32,
                 view.light_height as u32,
             ),
@@ -46,8 +47,8 @@ pub fn draw_lights(canvas: &mut Canvas<Window>, view: &View) {
         (
             GreenLight::BottomLeft,
             Rect::new(
-                view.center.x - view.road_size - view.light_width - view.lights_margin,
-                view.center.y + view.road_size + view.lights_margin,
+                view.center.x - road_size - view.light_width - view.lights_margin,
+                view.center.y + road_size + view.lights_margin,
                 view.light_width as u32,
                 view.light_height as u32,
             ),

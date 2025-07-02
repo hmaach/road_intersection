@@ -4,9 +4,9 @@ use sdl2::rect::Rect;
 use sdl2::render::Canvas;
 use sdl2::video::Window;
 
-use crate::modules::ui::View;
+use crate::modules::view::View;
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone)]
 pub enum Position {
     Top,
     Right,
@@ -14,7 +14,7 @@ pub enum Position {
     Left,
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone)]
 pub enum Direction {
     Straight,
     Right,
@@ -29,6 +29,7 @@ pub struct Vehicle {
     pub height: u32,
     pub color: Color,
     pub start: Position,
+    pub decision_made: bool,
     pub direction: Direction,
 }
 
@@ -41,29 +42,27 @@ pub struct CoolDown {
 
 impl Vehicle {
     pub fn new(view: &View, start: Position) -> Self {
-        let mut width: i32 = 15;
-        let mut height: i32 = 30;
+        let width: i32 = 25;
+        let height: i32 = 25;
         let (x, y) = match start {
             Position::Top => {
-                let x = view.center.x - view.road_size / 2 - width / 2;
+                let x = view.center.x - view.road_size as i32 / 2 - width / 2;
                 let y = 0;
                 (x, y)
             }
             Position::Right => {
                 let x = view.width as i32 - height;
-                let y = view.height as i32 / 2 - view.road_size / 2 - width / 2;
-                std::mem::swap(&mut width, &mut height);
+                let y = view.height as i32 / 2 - view.road_size as i32 / 2 - width / 2;
                 (x, y)
             }
             Position::Bottom => {
-                let x = view.center.x + view.road_size / 2 - width / 2;
+                let x = view.center.x + view.road_size as i32 / 2 - width / 2;
                 let y = view.height as i32 - height;
                 (x, y)
             }
             Position::Left => {
                 let x = 0;
-                let y = view.height as i32 / 2 + view.road_size / 2 - width / 2;
-                std::mem::swap(&mut width, &mut height);
+                let y = view.height as i32 / 2 + view.road_size as i32 / 2 - width / 2;
                 (x, y)
             }
         };
@@ -85,6 +84,7 @@ impl Vehicle {
             y,
             width: width as u32,
             height: height as u32,
+            decision_made: false,
             color,
             start,
             direction,
@@ -96,5 +96,17 @@ impl Vehicle {
         canvas
             .fill_rect(Rect::new(self.x, self.y, self.width, self.height))
             .unwrap();
+    }
+
+    pub fn is_in_area(&self, area: &Rect) -> bool {
+        let car_center_x = self.x + (self.width as i32) / 2;
+        let car_center_y = self.y + (self.height as i32) / 2;
+        let area_center_x = area.x() + (area.width() as i32) / 2;
+        let area_center_y = area.y() + (area.height() as i32) / 2;
+
+        let small_car = Rect::new(car_center_x, car_center_y, 3, 3);
+        let small_area = Rect::new(area_center_x, area_center_y, 3, 3);
+
+        small_area.has_intersection(small_car)
     }
 }
