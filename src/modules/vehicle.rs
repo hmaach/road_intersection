@@ -104,13 +104,31 @@ impl Vehicle {
 
     pub fn can_move(&self, view: &View) -> bool {
         let car_rect = Rect::new(self.x, self.y, self.width, self.height);
+        let margin = 13;
 
         for (my_light, rect) in &view.stop_lines {
             if *my_light == view.green_light {
-                // dbg!(&view.green_light);
                 continue;
             }
             if rect.has_intersection(car_rect) {
+                return false;
+            }
+        }
+
+        for other in &view.vehicles {
+            if other.x == self.x && other.y == self.y {
+                continue; // skip self
+            }
+
+            // Expand the other car's rectangle with margin
+            let other_rect_with_margin = Rect::new(
+                other.x - margin,
+                other.y - margin,
+                other.width + margin as u32 * 2,
+                other.height + margin as u32 * 2,
+            );
+
+            if other_rect_with_margin.has_intersection(car_rect) {
                 return false;
             }
         }
